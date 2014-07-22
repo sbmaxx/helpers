@@ -1,0 +1,13 @@
+/*table tr:nth-child(odd) {
+   background-color: #ccc;
+}*/
+table {
+    border-collapse: collapse;
+    border: 1px solid #000;
+}
+table td {
+    padding: 4px;
+}
+.qty, .price {
+    text-align: right;
+}

@@ -1,0 +1,10 @@
+var head = document.querySelector('head');
+var js = document.createElement('script');
+var css = document.createElement('link');
+js.type = 'text/javascript';
+js.src = 'file:///Users/sbmaxx/Development/helpers/megafonBalanceDetails.js';
+css.href = 'file:///Users/sbmaxx/Development/helpers/megafonBalanceDetails.css';
+css.rel = 'stylesheet';
+css.type = 'text/css';
+head.appendChild(js);
+head.appendChild(css);
