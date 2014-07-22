@@ -11,3 +11,6 @@ table td {
 .qty, .price {
     text-align: right;
 }
+.summary {
+    padding: 20px;
+}

@@ -140,6 +140,31 @@ var ths = tds.map(function(td) {
 
 table.querySelector('thead').innerHTML = ths;
 
+var trs = slice.call(table.querySelectorAll('tr'));
+var summary = [],
+    txts = [];
+summary.push(trs.pop());
+summary.push(trs.pop());
+summary.forEach(function(tr) {
+    // Записей:914Стоимость:944.30
+    var txt = tr.textContent;
+    var match = txt.match(/(\d+\.?\d+)/g);
+    txts.push({
+        qty: parseInt(match[0], 10),
+        total: parseFloat(match[1])
+    });
+    tr.parentNode.removeChild(tr);
+});
+
+if (txts[0].qty === txts[1].qty && txts[0].total === txts[1].total) {
+    txts.pop();
+}
+
+var summary = document.createElement('div');
+summary.className = 'summary';
+summary.innerHTML = '<p>Записей: ' + txts[0].qty + '</p><p>Сумма: ' + txts[0].total + '</p>';
+document.querySelector('body').appendChild(summary);
+
 // удаляем пустые таблицы
 tables.forEach(function(table) {
     table.parentNode.removeChild(table);
