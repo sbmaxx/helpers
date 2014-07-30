@@ -164,10 +164,42 @@ if (txts[0].qty === txts[1].qty && txts[0].total === txts[1].total) {
     txts.pop();
 }
 
+var body = document.querySelector('body');
+
 var summary = document.createElement('div');
 summary.className = 'summary';
 summary.innerHTML = '<p>Записей: ' + txts[0].qty + '</p><p>Сумма: ' + txts[0].total + '</p>';
-document.querySelector('body').appendChild(summary);
+body.appendChild(summary);
+
+var filters = document.createElement('div');
+filters.className = 'filters';
+filters.innerHTML = '<p>Фильтрация: <input type="text" value="0" name="price">';
+body.appendChild(filters);
+
+var input = document.querySelector('input[name="price"]');
+input.addEventListener('keyup', function(e) {
+    filterRows(getFilterValue());
+}, false);
+
+function getFilterValue() {
+    try {
+        return parseFloat(input.value);
+    } catch(e) {
+        return 0;
+    }
+}
+
+var rows = slice.call(document.querySelectorAll('tbody tr'));
+function filterRows(value) {
+    rows.forEach(function(row, i) {
+        var rv = parseFloat(row.lastElementChild.innerText);
+        if (rv < value) {
+            row.setAttribute('style', 'display: none;');
+        } else {
+            row.removeAttribute('style');
+        }
+    });
+}
 
 // удаляем пустые таблицы
 tables.forEach(function(table) {
