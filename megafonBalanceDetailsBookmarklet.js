@@ -1,6 +1,9 @@
 var head = document.querySelector('head');
+var jq = document.createElement('script');
 var js = document.createElement('script');
 var css = document.createElement('link');
+jq.type = 'text/javascript';
+js.src = 'http://yandex.st/jquery/2.1.1/jquery.min.js';
 js.type = 'text/javascript';
 js.src = 'file:///Users/sbmaxx/Development/helpers/megafonBalanceDetails.js';
 css.href = 'file:///Users/sbmaxx/Development/helpers/megafonBalanceDetails.css';
