@@ -83,17 +83,25 @@ $(function() {
     var thead = '';
     var tbody = '';
 
+    var summary = 0.00,
+        txt;
+
     $.each(document.querySelectorAll('table'), function(i, tbl) {
         var trs = tbl.querySelectorAll('tr');
         $.each(trs, function(j, tr) {
             if (i === 0 && j === 11) {
                 // это заголовок
                 thead += (wrapTR(cleanup(tr.innerHTML.replace(/td/g, 'th'))));
-            } else if ( ! (j <= 11 || j === trs.length - 1 || tr.childElementCount > 15) ) {
+            } else if ( ! (j <= 11 || j === trs.length - 1 || tr.childElementCount > 15 || tr.childElementCount === 5) ) {
                 // джойним в одну таблицу все строки кроме последней в таблице
                 // или если в ней слишком много колонок
                 // первые 11 строк — ненужная информация
+                // если столбцов 5, то это саммари. его мы построим самостоятельно
                 tbody += (wrapTR(cleanup(tr.innerHTML)));
+
+                // стоимость услуги
+                txt = parseFloat(tr.children[tr.children.length - 1].textContent);
+                Number.isNaN(txt) || (summary += txt);
             }
         });
     });
@@ -108,7 +116,7 @@ $(function() {
         '<table>',
         '<thead>' + thead + '</thead>',
         '<tbody>' + tbody + '</tbody>',
-        '<tfoot><tr><td colspan="8">ololo</td></tr></tfoot>',
+        '<tfoot><tr><td colspan="7">summary:</td><td class="summary">' + summary.toFixed(2) + '</td></tfoot>',
         '</table>'
     ].join('\n');
 
@@ -118,83 +126,6 @@ $(function() {
 
 });
 
-// var slice = Array.prototype.slice;
-//
-// // меняем текст
-// var tds = slice.call(table.querySelectorAll('td'))
-// tds.forEach(function(td) {
-//     replaces.forEach(function(r) {
-//         td.textContent = td.textContent.replace(r.find, r.replace);
-//     });
-// });
-//
-// // чистим все стили и атрибуты
-// var trs = slice.call(table.querySelectorAll('tr'));
-// trs.forEach(function(tr, i) {
-//     var tds = slice.call(tr.querySelectorAll('td'));
-//     tds.forEach(function(td, i) {
-//         td.removeAttribute('colspan');
-//         td.removeAttribute('class');
-//         td.removeAttribute('style');
-//         if (i === 3) {
-//             // кол-во
-//             td.setAttribute('class', 'qty');
-//         } else if (i === 7) {
-//             // руб
-//             td.setAttribute('class', 'price');
-//         }
-//     });
-// });
-//
-// // Вставляем шапку таблицы в thead
-// var thead = document.createElement('thead');
-// thead.appendChild(trs.shift());
-// table.insertBefore(thead, table.firstElementChild);
-//
-// // заменяем td в шапке на th
-// var tds = slice.call(table.querySelectorAll('thead td'));
-// var ths = tds.map(function(td) {
-//     var className = td.getAttribute('class');
-//     var str = '';
-//     if (className) {
-//         str += '<th class="' + className + '">';
-//     } else {
-//         str += '<th>'
-//     }
-//     str += td.textContent;
-//     str += '</th>';
-//     return str;
-// }).join('');
-//
-// table.querySelector('thead').innerHTML = ths;
-//
-// var trs = slice.call(table.querySelectorAll('tr'));
-// var summary = [],
-//     txts = [];
-// summary.push(trs.pop());
-// summary.push(trs.pop());
-// summary.forEach(function(tr) {
-//     // Записей:914Стоимость:944.30
-//     var txt = tr.textContent;
-//     var match = txt.match(/(\d+\.?\d+)/g);
-//     txts.push({
-//         qty: parseInt(match[0], 10),
-//         total: parseFloat(match[1])
-//     });
-//     tr.parentNode.removeChild(tr);
-// });
-//
-// if (txts[0].qty === txts[1].qty && txts[0].total === txts[1].total) {
-//     txts.pop();
-// }
-//
-// var body = document.querySelector('body');
-//
-// var summary = document.createElement('div');
-// summary.className = 'summary';
-// summary.innerHTML = '<p>Записей: ' + txts[0].qty + '</p><p>Сумма: ' + txts[0].total + '</p>';
-// body.appendChild(summary);
-//
 // var filters = document.createElement('div');
 // filters.className = 'filters';
 // filters.innerHTML = '<p>Фильтрация: <input type="text" value="0" name="price">';
@@ -225,12 +156,3 @@ $(function() {
 //     });
 // }
 //
-//
-// // удаляем пустые ссылки
-// slice.call(document.querySelectorAll('a')).forEach(function(a) {
-//     a.parentNode.removeChild(a);
-// });
-//
-// // удаляем дефолтный CSS
-// var style = document.querySelector('style');
-// style.parentNode.removeChild(style);
