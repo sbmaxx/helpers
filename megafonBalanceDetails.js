@@ -82,8 +82,8 @@ function wrapTR(str) {
 
 $(function() {
 
-    console.time('start');
-    console.profile('start');
+    // console.time('start');
+    // console.profile('start');
 
     var thead = '';
     var tbody = '';
@@ -147,15 +147,18 @@ $(function() {
 
     $('body').append('<div class="filters"><p>Фильтрация: <input type="text" value="0" name="price"></div>');
 
-    console.profileEnd();
-    console.timeEnd('start');
+    // console.profileEnd();
+    // console.timeEnd('start');
 
+    var timer;
     $('input').on('keyup', function() {
-        console.time('filter');
-        console.profile('filter');
-        filterRows(getFilterValue(this));
-        console.profileEnd();
-        console.timeEnd('filter');
+        // console.time('filter');
+        // console.profile('filter');
+        timer = setTimeout(function() {
+            filterRows(getFilterValue(this))
+        }.bind(this), 250);
+        // console.profileEnd();
+        // console.timeEnd('filter');
     });
 
     var trs = $('tr').toArray();
