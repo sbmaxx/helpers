@@ -1,5 +1,3 @@
-var slice = Array.prototype.slice;
-var tables = slice.call(document.querySelectorAll('table'));
 var replaces = [
     {
         find: 'Прод/ Объем',
@@ -71,146 +69,168 @@ var replaces = [
     }
 ];
 
-var appendElem = tables[0].querySelector('tbody');
+function cleanup(str) {
+    return str.replace(/(t(?:d|r|h))\s?[^>]+/g, '$1')
+}
+function wrapTR(str) {
+    return '<tr>' + str + '</tr>';
+}
 
-tables.forEach(function(table, i) {
-    table.setAttribute('width', '950px');
-    var trs = slice.call(table.querySelectorAll('tr'));
-    trs.forEach(function(tr, j) {
-        // сбрасываем высоту строк
-        tr.removeAttribute('style');
-        var length = slice.call(tr.querySelectorAll('td')).length;
-        // чистим шапку таблиц
-        // оставляем расшифровку только для первой таблицы
-        if (j <= (i === 0 ? 10 : 11) || j === trs.length - 1 || length > 15) {
-            tr.parentNode.removeChild(tr);
-        } else if (i !== 0) {
-            // джойним в одну таблицу
-            appendElem.appendChild(tr);
-        }
+$(function() {
+
+    console.time('start');
+
+    var thead = '';
+    var tbody = '';
+
+    $.each(document.querySelectorAll('table'), function(i, tbl) {
+        var trs = tbl.querySelectorAll('tr');
+        $.each(trs, function(j, tr) {
+            if (i === 0 && j === 11) {
+                // это заголовок
+                thead += (wrapTR(cleanup(tr.innerHTML.replace(/td/g, 'th'))));
+            } else if ( ! (j <= 11 || j === trs.length - 1 || tr.childElementCount > 15) ) {
+                // джойним в одну таблицу все строки кроме последней в таблице
+                // или если в ней слишком много колонок
+                // первые 11 строк — ненужная информация
+                tbody += (wrapTR(cleanup(tr.innerHTML)));
+            }
+        });
     });
-});
 
-var table = tables.shift();
-table.removeAttribute('border');
-table.removeAttribute('cellspacing');
-table.removeAttribute('cellspacing');
-
-// меняем текст
-var tds = slice.call(table.querySelectorAll('td'))
-tds.forEach(function(td) {
     replaces.forEach(function(r) {
-        td.textContent = td.textContent.replace(r.find, r.replace);
+        var re = new RegExp(r.find, 'g');
+        thead = thead.replace(re, r.replace);
+        tbody = tbody.replace(re, r.replace);
     });
+
+    document.body.innerHTML = [
+        '<table>',
+        '<thead>' + thead + '</thead>',
+        '<tbody>' + tbody + '</tbody>',
+        '<tfoot><tr><td colspan="8">ololo</td></tr></tfoot>',
+        '</table>'
+    ].join('\n');
+
+    $('style').remove();
+
+    console.timeEnd('start');
+
 });
 
-// чистим все стили и атрибуты
-var trs = slice.call(table.querySelectorAll('tr'));
-trs.forEach(function(tr, i) {
-    var tds = slice.call(tr.querySelectorAll('td'));
-    tds.forEach(function(td, i) {
-        td.removeAttribute('colspan');
-        td.removeAttribute('class');
-        td.removeAttribute('style');
-        if (i === 3) {
-            // кол-во
-            td.setAttribute('class', 'qty');
-        } else if (i === 7) {
-            // руб
-            td.setAttribute('class', 'price');
-        }
-    });
-});
-
-// Вставляем шапку таблицы в thead
-var thead = document.createElement('thead');
-thead.appendChild(trs.shift());
-table.insertBefore(thead, table.firstElementChild);
-
-// заменяем td в шапке на th
-var tds = slice.call(table.querySelectorAll('thead td'));
-var ths = tds.map(function(td) {
-    var className = td.getAttribute('class');
-    var str = '';
-    if (className) {
-        str += '<th class="' + className + '">';
-    } else {
-        str += '<th>'
-    }
-    str += td.textContent;
-    str += '</th>';
-    return str;
-}).join('');
-
-table.querySelector('thead').innerHTML = ths;
-
-var trs = slice.call(table.querySelectorAll('tr'));
-var summary = [],
-    txts = [];
-summary.push(trs.pop());
-summary.push(trs.pop());
-summary.forEach(function(tr) {
-    // Записей:914Стоимость:944.30
-    var txt = tr.textContent;
-    var match = txt.match(/(\d+\.?\d+)/g);
-    txts.push({
-        qty: parseInt(match[0], 10),
-        total: parseFloat(match[1])
-    });
-    tr.parentNode.removeChild(tr);
-});
-
-if (txts[0].qty === txts[1].qty && txts[0].total === txts[1].total) {
-    txts.pop();
-}
-
-var body = document.querySelector('body');
-
-var summary = document.createElement('div');
-summary.className = 'summary';
-summary.innerHTML = '<p>Записей: ' + txts[0].qty + '</p><p>Сумма: ' + txts[0].total + '</p>';
-body.appendChild(summary);
-
-var filters = document.createElement('div');
-filters.className = 'filters';
-filters.innerHTML = '<p>Фильтрация: <input type="text" value="0" name="price">';
-body.appendChild(filters);
-
-var input = document.querySelector('input[name="price"]');
-input.addEventListener('keyup', function(e) {
-    filterRows(getFilterValue());
-}, false);
-
-function getFilterValue() {
-    try {
-        return parseFloat(input.value);
-    } catch(e) {
-        return 0;
-    }
-}
-
-var rows = slice.call(document.querySelectorAll('tbody tr'));
-function filterRows(value) {
-    rows.forEach(function(row, i) {
-        var rv = parseFloat(row.lastElementChild.innerText);
-        if (rv < value) {
-            row.setAttribute('style', 'display: none;');
-        } else {
-            row.removeAttribute('style');
-        }
-    });
-}
-
-// удаляем пустые таблицы
-tables.forEach(function(table) {
-    table.parentNode.removeChild(table);
-});
-
-// удаляем пустые ссылки
-slice.call(document.querySelectorAll('a')).forEach(function(a) {
-    a.parentNode.removeChild(a);
-});
-
-// удаляем дефолтный CSS
-var style = document.querySelector('style');
-style.parentNode.removeChild(style);
+// var slice = Array.prototype.slice;
+//
+// // меняем текст
+// var tds = slice.call(table.querySelectorAll('td'))
+// tds.forEach(function(td) {
+//     replaces.forEach(function(r) {
+//         td.textContent = td.textContent.replace(r.find, r.replace);
+//     });
+// });
+//
+// // чистим все стили и атрибуты
+// var trs = slice.call(table.querySelectorAll('tr'));
+// trs.forEach(function(tr, i) {
+//     var tds = slice.call(tr.querySelectorAll('td'));
+//     tds.forEach(function(td, i) {
+//         td.removeAttribute('colspan');
+//         td.removeAttribute('class');
+//         td.removeAttribute('style');
+//         if (i === 3) {
+//             // кол-во
+//             td.setAttribute('class', 'qty');
+//         } else if (i === 7) {
+//             // руб
+//             td.setAttribute('class', 'price');
+//         }
+//     });
+// });
+//
+// // Вставляем шапку таблицы в thead
+// var thead = document.createElement('thead');
+// thead.appendChild(trs.shift());
+// table.insertBefore(thead, table.firstElementChild);
+//
+// // заменяем td в шапке на th
+// var tds = slice.call(table.querySelectorAll('thead td'));
+// var ths = tds.map(function(td) {
+//     var className = td.getAttribute('class');
+//     var str = '';
+//     if (className) {
+//         str += '<th class="' + className + '">';
+//     } else {
+//         str += '<th>'
+//     }
+//     str += td.textContent;
+//     str += '</th>';
+//     return str;
+// }).join('');
+//
+// table.querySelector('thead').innerHTML = ths;
+//
+// var trs = slice.call(table.querySelectorAll('tr'));
+// var summary = [],
+//     txts = [];
+// summary.push(trs.pop());
+// summary.push(trs.pop());
+// summary.forEach(function(tr) {
+//     // Записей:914Стоимость:944.30
+//     var txt = tr.textContent;
+//     var match = txt.match(/(\d+\.?\d+)/g);
+//     txts.push({
+//         qty: parseInt(match[0], 10),
+//         total: parseFloat(match[1])
+//     });
+//     tr.parentNode.removeChild(tr);
+// });
+//
+// if (txts[0].qty === txts[1].qty && txts[0].total === txts[1].total) {
+//     txts.pop();
+// }
+//
+// var body = document.querySelector('body');
+//
+// var summary = document.createElement('div');
+// summary.className = 'summary';
+// summary.innerHTML = '<p>Записей: ' + txts[0].qty + '</p><p>Сумма: ' + txts[0].total + '</p>';
+// body.appendChild(summary);
+//
+// var filters = document.createElement('div');
+// filters.className = 'filters';
+// filters.innerHTML = '<p>Фильтрация: <input type="text" value="0" name="price">';
+// body.appendChild(filters);
+//
+// var input = document.querySelector('input[name="price"]');
+// input.addEventListener('keyup', function(e) {
+//     filterRows(getFilterValue());
+// }, false);
+//
+// function getFilterValue() {
+//     try {
+//         return parseFloat(input.value);
+//     } catch(e) {
+//         return 0;
+//     }
+// }
+//
+// var rows = slice.call(document.querySelectorAll('tbody tr'));
+// function filterRows(value) {
+//     rows.forEach(function(row, i) {
+//         var rv = parseFloat(row.lastElementChild.innerText);
+//         if (rv < value) {
+//             row.setAttribute('style', 'display: none;');
+//         } else {
+//             row.removeAttribute('style');
+//         }
+//     });
+// }
+//
+//
+// // удаляем пустые ссылки
+// slice.call(document.querySelectorAll('a')).forEach(function(a) {
+//     a.parentNode.removeChild(a);
+// });
+//
+// // удаляем дефолтный CSS
+// var style = document.querySelector('style');
+// style.parentNode.removeChild(style);

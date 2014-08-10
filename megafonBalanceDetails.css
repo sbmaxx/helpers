@@ -1,7 +1,7 @@
 /*table tr:nth-child(odd) {
    background-color: #ccc;
 }*/
-table {
+table, td, th {
     border-collapse: collapse;
     border: 1px solid #000;
 }

@@ -14,5 +14,15 @@ css.rel = 'stylesheet';
 css.type = 'text/css';
 
 head.appendChild(jq);
-head.appendChild(js);
 head.appendChild(css);
+
+var jqInterval = setInterval(function() {
+    checkJQ();
+}, 5);
+
+function checkJQ() {
+    if (typeof window.$ !== 'undefined') {
+        head.appendChild(js);
+        clearInterval(jqInterval);
+    }
+}
