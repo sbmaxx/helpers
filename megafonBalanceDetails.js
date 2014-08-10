@@ -117,7 +117,6 @@ $(function() {
                 }
 
                 tbody += wrapTR(trHtml);
-
             }
         });
     });
@@ -181,6 +180,5 @@ $(function() {
             return 0;
         }
     }
-
 
 });
