@@ -1,71 +1,75 @@
 var replaces = [
     {
-        find: 'Прод/ Объем',
+        find: /Прод\/ Объем/,
         replace: 'Кол-во'
     },
     {
-        find: 'Вид услуги',
+        find: /Вид услуги/,
         replace: 'Услуга'
     },
     {
-        find: 'Абонентский номер, адрес электронной почты, точка доступа',
+        find: /Абонентский номер, адрес электронной почты, точка доступа/,
         replace: 'Номер'
     },
     {
-        find: 'Единица тарификации (мин, сек, шт, Kb, Mb)',
+        find: /Единица тарификации \(мин, сек, шт, Kb, Mb\)/,
         replace: 'Ед.'
     },
     {
-        find: 'Стоимость (с НДС),  руб.',
+        find: /Стоимость \(с НДС\),  руб\./,
         replace: 'Руб.'
     },
     {
-        find: 'Секунда',
+        find: /Секунда/,
         replace: 'Сек.'
     },
     {
-        find: 'Мобильный интернет',
+        find: /Мобильный интернет/,
         replace: 'интернет'
     },
     {
-        find: 'на мобильные номера дом. региона',
+        find: /на мобильные номера дом\. региона/,
         replace: '→ звонок'
     },
     {
-        find: 'с номеров МегаФон дом. региона',
+        find: /с номеров МегаФон дом\. региона/,
         replace: '← звонок на МегаФон'
     },
     {
-        find: 'с мобильных номеров дом. региона',
+        find: /с мобильных номеров дом\. региона/,
         replace: '← звонок'
     },
     {
-        find: 'Входящий',
+        find: /Входящий/,
         replace: '← звонок'
     },
     {
-        find: 'на МегаФон домашнего региона',
+        find: /на МегаФон домашнего региона/,
         replace: '→ звонок на МегаФон'
     },
     {
-        find: 'Входящее SMS',
+        find: /Входящее SMS/,
         replace: '← SMS'
     },
     {
-        find: 'Исходящее SMS',
+        find: /Исходящее SMS/,
         replace: '→ SMS'
     },
     {
-        find: 'Входящий',
+        find: /Входящий/,
         replace: '←'
     },
     {
-        find: 'Исходящий',
+        find: /Исходящий/,
         replace: '→'
     },
     {
-        find: 'Исх. на ТФОП региона филиала',
+        find: /Исх\. на ТФОП региона филиала/,
         replace: '→ ☏'
+    },
+    {
+        find: /Место вызова/,
+        replace: 'Где'
     }
 ];
 
@@ -107,9 +111,8 @@ $(function() {
     });
 
     replaces.forEach(function(r) {
-        var re = new RegExp(r.find, 'g');
-        thead = thead.replace(re, r.replace);
-        tbody = tbody.replace(re, r.replace);
+        thead = thead.replace(r.find, r.replace);
+        tbody = tbody.replace(r.find, r.replace);
     });
 
     document.body.innerHTML = [
@@ -120,7 +123,15 @@ $(function() {
         '</table>'
     ].join('\n');
 
+    // удаляем старые стили
     $('style').remove();
+
+    // через $ не получилось
+    var css = document.createElement('link');
+    css.href = bookmarkletPath + 'megafonBalanceDetails.css';
+    css.rel = 'stylesheet';
+    css.type = 'text/css';
+    document.querySelector('head').appendChild(css);
 
     console.timeEnd('start');
 
