@@ -83,12 +83,15 @@ function wrapTR(str) {
 $(function() {
 
     console.time('start');
+    console.profile('start');
 
     var thead = '';
     var tbody = '';
 
     var summary = 0.00,
         txt;
+
+    var trHtml;
 
     $.each(document.querySelectorAll('table'), function(i, tbl) {
         var trs = tbl.querySelectorAll('tr');
@@ -101,11 +104,20 @@ $(function() {
                 // или если в ней слишком много колонок
                 // первые 11 строк — ненужная информация
                 // если столбцов 5, то это саммари. его мы построим самостоятельно
-                tbody += (wrapTR(cleanup(tr.innerHTML)));
+
+                trHtml = cleanup(tr.innerHTML);
 
                 // стоимость услуги
                 txt = parseFloat(tr.children[tr.children.length - 1].textContent);
-                Number.isNaN(txt) || (summary += txt);
+
+                if (!Number.isNaN(txt)) {
+                    summary += txt;
+                    // быстрый атрибут для фильтров
+                    trHtml = trHtml.replace(/<td>([^<]+)<\/td>$/gm, '<td data-value="' + txt + '">$1</td>');
+                }
+
+                tbody += wrapTR(trHtml);
+
             }
         });
     });
@@ -133,37 +145,39 @@ $(function() {
     css.type = 'text/css';
     document.querySelector('head').appendChild(css);
 
+    $('body').append('<div class="filters"><p>Фильтрация: <input type="text" value="0" name="price"></div>');
+
+    console.profileEnd();
     console.timeEnd('start');
 
-});
+    $('input').on('keyup', function() {
+        console.time('filter');
+        console.profile('filter');
+        filterRows(getFilterValue(this));
+        console.profileEnd();
+        console.timeEnd('filter');
+    });
 
-// var filters = document.createElement('div');
-// filters.className = 'filters';
-// filters.innerHTML = '<p>Фильтрация: <input type="text" value="0" name="price">';
-// body.appendChild(filters);
-//
-// var input = document.querySelector('input[name="price"]');
-// input.addEventListener('keyup', function(e) {
-//     filterRows(getFilterValue());
-// }, false);
-//
-// function getFilterValue() {
-//     try {
-//         return parseFloat(input.value);
-//     } catch(e) {
-//         return 0;
-//     }
-// }
-//
-// var rows = slice.call(document.querySelectorAll('tbody tr'));
-// function filterRows(value) {
-//     rows.forEach(function(row, i) {
-//         var rv = parseFloat(row.lastElementChild.innerText);
-//         if (rv < value) {
-//             row.setAttribute('style', 'display: none;');
-//         } else {
-//             row.removeAttribute('style');
-//         }
-//     });
-// }
-//
+    var trs = $('tr').toArray();
+
+    function filterRows(value) {
+        trs.forEach(function(row, i) {
+            var rv = parseFloat(row.lastElementChild.getAttribute('data-value'));
+            if (rv < value) {
+                row.setAttribute('style', 'display: none;');
+            } else {
+                row.removeAttribute('style');
+            }
+        });
+    }
+
+    function getFilterValue(input) {
+        try {
+            return parseFloat(input.value);
+        } catch(e) {
+            return 0;
+        }
+    }
+
+
+});
