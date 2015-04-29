@@ -1,0 +1,19 @@
+table, td, th {
+    border-collapse: collapse;
+    border: 1px solid #000;
+}
+table td {
+    padding: 4px;
+}
+.filters {
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: 200px;
+}
+.hidden {
+    display: none;
+}
+.table-container {
+    margin-right: 200px;
+}
